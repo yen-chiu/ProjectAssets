@@ -28,7 +28,11 @@ site/           站点正在用的那一组：nz-anchor-sheet.webp + 三张 nz-u
 scenes/         场景图（按 art-prompts 第 2 节出的单张成品，未超分）
   nianzhen_nightread_lookup_1012x1348.png   夜读·台灯下抬头 3:4  → 聊天页欢迎屏 900×1200
   nianzhen_nightread_lookup_1254x1254.png   夜读·台灯下抬头 1:1  → 聊天页书桌位 1000×1000
-  nianzhen_nightread_lookup_1448x1086.png   夜读·台灯下抬头 4:3  → 暂未上站，留作封面/横幅
+  nianzhen_nightread_lookup_1448x1086.png   夜读·台灯下抬头 4:3  → 聊天页欢迎屏（2026-11-10 起换成它）
+sheets/         设定稿与表情表原图（站点 02/03/04 图位都从这两张裁）
+  nianzhen_character_sheet_1312x1199.png    一页设定稿：正/三分之四全身、面部、四处细节、配色
+  nianzhen_expressions_9up_1254x1254.png    九宫格表情第一版，3×3 每格 418×418
+  nianzhen_expressions_9up_notes.txt        出这张表时的备注（第五格外转不够、第七格像不悦）
 ```
 
 ---
@@ -171,3 +175,28 @@ waifu2x-ncnn-vulkan.exe -i nianzhen_sheet_1920_master.png -o master_waifu2x.png 
 | `scenes/nianzhen_nightread_lookup_1012x1348.png` | `9f91c8ae` | 夜读·台灯下抬头 3:4（2026-11-04 生成） |
 | `scenes/nianzhen_nightread_lookup_1254x1254.png` | `a9678df7` | 夜读·台灯下抬头 1:1（2026-11-04 生成） |
 | `scenes/nianzhen_nightread_lookup_1448x1086.png` | `409a078a` | 夜读·台灯下抬头 4:3（2026-11-09 生成） |
+| `sheets/nianzhen_character_sheet_1312x1199.png` | `0b9f4cc3` | 一页设定稿原图 |
+| `sheets/nianzhen_expressions_9up_1254x1254.png` | `239ba6fe` | 九宫格表情第一版 |
+| `sheets/nianzhen_expressions_9up_notes.txt` | `e28ab62b` | 九宫格备注原文 449 B |
+
+---
+
+## 九、设定稿与表情表（站点 02/03/04 图位的来源）
+
+站点 `yen-chiu.github.io` 的角色设定页把这两张表裁成了单格：
+
+| 站点图位 | 取自 | 裁切框（原图坐标） |
+|---|---|---|
+| 02a 正视 | 设定稿左侧全身 | `98,18 → 333,842`，补背景到 1:2，出 500×1000 |
+| 02b 三分之四侧 | 设定稿第二身 | `362,18 → 554,834`，补背景到 1:2，出 500×1000 |
+| 03a–03e 表情 | 九宫格第 1/2/5/6/8 格 | 每格 418×418，出 420×420 |
+| 04a 一字夹 | 设定稿右列发夹细节 | `1109,397 → 1263,543`，出 420×420 |
+| 04b 酒窝 | 设定稿中央面部 | `705,305 → 945,545`，出 420×420 |
+| 04e 耳圈 | 设定稿右列耳部细节 | `1109,205 → 1279,377`，出 420×420 |
+
+补背景的做法：全身格把人裁到最紧后，用**右缘 5 列的中位色按行平铺**补到 1:2——用纯背景色平涂会在接缝处露出一条色差，用边缘复制则会把人物衣服的颜色拖成竖条。
+
+**没上站的部分**：设定稿只有正视和三分之四侧，`02c 背视` 仍是空位；细节栏的「指节铅笔灰」「口袋里的糖」两张表里也没有，`04c/04d` 留空。
+
+出图 prompt 里该补的负面词：`three-quarter view, back view` 之外，背视要单独写 `back view, nape of the neck`，否则模型会退回三分之四。
+
