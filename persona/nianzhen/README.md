@@ -25,6 +25,10 @@ final/
 compare/        超分对比：整图并排、1:1 三处裁切、2× 放大条
 scripts/        拼版（compose / rebuild_from_source）与量测（analyze_upscale / zoom_check）
 site/           站点正在用的那一组：nz-anchor-sheet.webp + 三张 nz-upscale-0*.png
+scenes/         场景图（按 art-prompts 第 2 节出的单张成品，未超分）
+  nianzhen_nightread_lookup_1012x1348.png   夜读·台灯下抬头 3:4  → 聊天页欢迎屏 900×1200
+  nianzhen_nightread_lookup_1254x1254.png   夜读·台灯下抬头 1:1  → 聊天页书桌位 1000×1000
+  nianzhen_nightread_lookup_1448x1086.png   夜读·台灯下抬头 4:3  → 暂未上站，留作封面/横幅
 ```
 
 ---
@@ -164,3 +168,6 @@ waifu2x-ncnn-vulkan.exe -i nianzhen_sheet_1920_master.png -o master_waifu2x.png 
 | `site/nz-upscale-01-eyes.png` | `537fa9af` | 站点对比图 ① |
 | `site/nz-upscale-02-knit.png` | `d4e596ee` | 站点对比图 ② |
 | `site/nz-upscale-03-hair.png` | `24e7e361` | 站点对比图 ③ |
+| `scenes/nianzhen_nightread_lookup_1012x1348.png` | `9f91c8ae` | 夜读·台灯下抬头 3:4（2026-11-04 生成） |
+| `scenes/nianzhen_nightread_lookup_1254x1254.png` | `a9678df7` | 夜读·台灯下抬头 1:1（2026-11-04 生成） |
+| `scenes/nianzhen_nightread_lookup_1448x1086.png` | `409a078a` | 夜读·台灯下抬头 4:3（2026-11-09 生成） |
