@@ -1,0 +1,735 @@
+# 念真 · 原画 Prompt 库
+
+给念真画原画用。所有 prompt 都围绕 `nianzhen.json` 里的设定：20 岁、大学在读、业余程序猿；中分短发（深棕近黑、发梢略外翘、**左侧一枚金色一字夹**）；白衬衫卷袖 + 青绿针织背心；**左耳一只小金圈、右耳空着**；**右脸一个很浅的酒窝**；指节带铅笔灰；外套口袋塞着贴纸、糖和一小段线。
+
+用法：先出 **1 张定妆照**（第 0 节），之后每个场景都带上「角色锚点 + 风格锚点」两段前缀，只换中间那段动作/场景。这样脸和衣服才不容易漂。
+
+---
+
+## 0. 定妆照 · 锚点（v3 三格，当前版）
+
+> 3:2 横 · 三格等宽并排：左·全身正面 / 中·全身 3/4 / 右·头部特写。同一人物、同一套衣服、同一发型，纯浅灰底、无文字。
+> 与素材包 `~/Desktop/nianzhen-pack/prompt-v3.md` 同源；成品即站点 `assets/img/persona/nz-anchor-sheet.webp`。
+
+```text
+character reference sheet, plain light-grey background, three equal-width panels side by side, no text, the same girl in all three panels, same outfit and same hairstyle in all three,
+
+CHARACTER
+nianzhen, 20-year-old Chinese college student, 160 cm, petite but not fragile, realistic young-adult proportions, about 7 heads tall, soft narrow shoulders,
+
+FACE (identical in all three panels)
+soft oval face, the widest part is across the cheeks not the temples, slightly full lower cheeks keeping a schoolgirl roundness, the jawline stays round and wide all the way down to a short soft chin, chin about half the width across the cheeks, cheekbones low and soft, small forehead, no straight diagonal from cheekbone to chin, no narrowing below the cheekbones,
+
+HAIR
+short dark-brown bob parted in the middle, slightly flipped ends, one small ahoge curling up from the top of her head, hair tucked behind her left ear, one small gold hairpin on her left side, one very small gold hoop in her left ear only, right ear bare,
+
+EYES
+thin, nearly straight eyebrows; eyes a little large with slightly downturned outer corners and a soft inner double eyelid, warm amber irises with a faint teal rim,
+
+NOSE AND LIPS
+low nose bridge with a small rounded tip; lower lip full, natural pale rose,
+
+OUTFIT
+white dress shirt with sleeves rolled to the elbow, dark teal knit vest over it, charcoal-grey wide-leg trousers with side pockets, white sneakers,
+
+PANEL 1 — left: full body front view, camera straight on at chest height, knees and shoes fully in frame, both hands in her pockets, weight on one leg, face completely relaxed: eyelids level, brows level, mouth a soft straight line with the corners neither lifted nor pulled down, no smile, no frown, no crease on her right cheek,
+
+PANEL 2 — center: full body three-quarter view, her body and head turned 45 degrees, her left shoulder toward the camera and appearing larger and closer, her right shoulder behind her and partly hidden by her body, her head turned with the body so that only one ear is visible in this panel — her left ear, the right ear hidden behind her head, her right eye sitting closer to the far edge of her face, mouth a small closed-lip smile with the corners lifted only slightly, a soft dimple on her right cheek,
+
+PANEL 3 — right: head and shoulders close-up, front view, the same slight closed-lip smile as panel 2, the soft dimple on her right cheek clearly readable, no teeth,
+
+LIGHTING AND BACKGROUND
+even flat lighting, plain light-grey background, soft contact shadow under her feet, no cast shadow on the background,
+
+STYLE
+soft anime illustration, painterly digital art, fine crisp linework, ultra-detailed, sharp focus, high resolution
+```
+
+**出图参数**：3:2 横、三格等宽、无文字（`no text` 写在正向词里，别只放负面词）。
+
+**负面词（这张必须带，否则脸会被拉成锥子）**
+
+```text
+sharp pointed chin, V-line jaw, extremely narrow face, shrunk lower face, face narrowing below the cheekbones, straight diagonal jawline, high razor cheekbones, gaunt cheeks, hollow cheekbones, model face, idol proportions, adult-woman maturity, oversized eyes, plastic skin, heavy makeup, contouring, glossy lips, elongated legs, fashion illustration proportions, tiny head, eight heads tall, floating feet, all three panels facing the camera, same pose in all panels, both ears visible in the three-quarter panel, level symmetric shoulders in the three-quarter panel, smile in the neutral panel, grin, teeth showing, pout, furrowed brows, sullen expression, frown, two different girls, mismatched outfit, cropped feet, extra fingers, deformed hands, watermark, signature
+```
+
+**最容易垮的是中格**：模型爱把两只耳朵都画出来、把肩膀画平，所以 `only one ear is visible … her left ear` 和负面词里的 `both ears visible in the three-quarter panel` 各写了一遍——少一条，45° 就退化成正面微侧。
+
+**画质**：`fine crisp linework, ultra-detailed, sharp focus, high resolution` 已写在 STYLE 段里，别单加「4K」，多数模型不认识这个词。真正的尺寸靠出图后放大（见第 14 节）。
+
+**后处理：先拼版，再超分，别反过来**
+
+| 步 | 做什么 | 产物 |
+| --- | --- | --- |
+| 1 | 三格拼版（背景灰统一 204/203/208、按身高对齐、脚底压同一基线、格线两侧各内收 3 px） | `nianzhen_sheet_1920_master.png` 1920×1280 母版 |
+| 2 | Real-CUGAN 2× · 无降噪（`up2x-no-denoise`） | 3840×2560 定妆照锚点 |
+| 3 | 缩到 1600 宽存 webp，进站点 | `assets/img/persona/nz-anchor-sheet.webp` |
+
+选 Real-CUGAN 而不是 Real-ESRGAN：ESRGAN 更锐，但把睫毛外沿和发丝描成暖红边、把背心的冷灰蓝针脚推成暖铜色；而且成品缩到 1K（参考图真正进模型的尺寸）时那点锐度就没了，色偏却全额留着。四版锐度 / 背景 ΔE / 多尺度对照见 `_tabs/persona.md` 第 10 节。
+
+**检查清单（三格一起看，一条不对就重画，别将就）**
+
+- 三格是同一个人：脸宽、下巴、发际线对得上——最容易在中格与右格之间漂
+- 中格是真 45°：左肩朝镜头、只露左耳、右耳被头挡住、右眼更靠脸的远侧边缘
+- 左格完全中性：不笑、不皱眉、右脸没有酒窝
+- 中格与右格是同一个「小抿嘴笑」，酒窝只在右脸出现一处
+- 金一字夹在**她自己的左**、金耳圈只在**左耳**、右耳空着
+- 背景是一整块灰：没有投影、没有格线、没有文字
+- 下颌圆弧、下巴短圆（理由见 0.1）
+
+> 想要「专业设定稿」那种三视图＋表情表＋细节表，见文末 **第 12 节**。那一节是拿来做一致性锚点的，第 0 节这张是拿来直接用的。
+
+> 旧的「两格并排」prompt 已停用；需要时 `git log -p chat/assets/persona/art-prompts.md` 取回。
+
+### 0.1 脸型为什么要单独写（以及怎么修）
+
+**默认审美是锥子脸。** 不写脸型，模型会默认走「网红/idol 脸」：下半脸收窄、下巴削尖、颧骨抬高。要它画一张圆润的学生脸，必须在 prompt 里写**结构**，不能只写「可爱」「年轻」。
+
+三个层次，从弱到强：
+
+1. **正向描述**：`soft oval face` / `rounded jawline` / `short rounded chin` / `slightly full lower cheeks` —— 光写这个，模型多半只当形容词
+2. **写明“不是”**：`not pointed, no sharp jaw angle, jaw wider than the cheekbones` —— 自然语言模型对这种否定式约束响应更好
+3. **负面词**：`sharp pointed chin, V-line jaw, gaunt cheeks, model face` —— SD / MJ 的 negative 位必填
+
+**常用替换词对照**（左边是会被画成锥子脸的写法，右边是能保住圆脸的写法）：
+
+| 别写 | 改写成 |
+| --- | --- |
+| `delicate features`、`beautiful face` | `soft round features, full lower face` |
+| `slim jaw`、`sharp jawline` | `soft rounded jawline, gentle jaw angle` |
+| `small chin` | `short chin, slightly rounded and set back` |
+| `high cheekbones` | `low soft cheekbones, no visible cheekbone edge` |
+| `mature`, `elegant` | `still has some schoolgirl roundness` |
+
+**如果还是尖**：把参考图（第 12.2 的三视图或这张定妆照）当 `--cref` 输入、权重提到 `--cw 100`；MJ 加 `--no pointy chin, V-shaped face`；SD 把负面词里的几条权重调到 1.3 左右。
+
+---
+
+## 0.2 首页趣味头像 · 念真的虚构档案照（轻喜剧版）
+
+> 用途：角色设定页首页主头像，1:1 正方形。与第 0 节的正式三视图不同，这是趣味番外形象，不替代标准定妆照。优先参考第 0 节的脸型、发型和左右配饰。
+
+```text
+SINGLE IMAGE, square 1:1, playful fictional character mugshot portrait for a character profile landing page. Japanese slice-of-life anime character design, clean cel shading, restrained pencil texture and subtle paper grain, soft frontal studio light, muted cream and slate-blue palette, humorous but not sinister.
+
+NIANZHEN: a 20-year-old Chinese college student, 160 cm tall. Front-facing centered head-and-upper-torso portrait, direct eye contact. Soft oval face widest at the cheeks, noticeably full lower cheeks, gently rounded wide jaw, short rounded chin, NOT a pointed V-shaped chin. Thin nearly straight eyebrows, warm amber eyes with faint teal rims, small rounded nose, natural pale rose lips. Short center-parted dark espresso-brown bob with slightly flipped ends and one small ahoge. One straight gold hairpin on HER ANATOMICAL LEFT side and one tiny gold hoop in HER LEFT EAR ONLY, right ear bare. Do not mirror her accessories.
+
+EXPRESSION: mildly unimpressed but playful, one eyebrow slightly raised, lips subtly pressed to one side, as though she is protesting an absurd accusation without saying a word. No big smile; no dimple unless she smiles. Preserve her youthful rounded facial structure.
+
+COSTUME: an intentionally theatrical, harmless cartoon prisoner costume with broad horizontal cream and muted blue-gray stripes; neatly tailored, not dirty or grim. It is a costume for a humorous character-profile illustration, not a realistic crime scene.
+
+PROP: both hands hold ONE simple charcoal-gray slate at upper chest height, with ample space for legible text. Main line: 念真. Second line: CASE NO. 0731. Third line: 罪名：偷走一个下午. One tiny hand-drawn cat doodle. Correct Chinese characters are preferred; if accurate text is not possible, leave clean blank writing areas for manual typography.
+
+BACKGROUND: clean warm off-white height-chart wall with minimal paper texture. Equally spaced, horizontally level measurement marks labeled 130, 140, 150, 160, 170 cm. The top of her actual hair (excluding the ahoge) aligns with the 160 cm line, with the ahoge allowed to extend above. The scale must be internally consistent; do not place 160 cm across her forehead or mid-hair. Do not over-crop the top of her hair or the slate.
+
+COMPOSITION: frontal ID-photo symmetry with slight personality in her expression. Face remains clearly readable in a small avatar; slate is readable in a full-page profile image. No additional people, no extra hands, no split panels, no heavy cinematic shadows, no gritty interrogation-room atmosphere, no photorealistic police equipment, no V-shaped jaw, no mirrored hairpin or earring, no watermark.
+```
+
+**出图核验**：① 160 cm 刻度与真实头顶是否一致（呆毛不计）；② 左侧配饰是否在人物解剖学左侧；③ 脸颊、下颌是否符合第 0 节；④ 牌中文字是否正确；⑤ 缩成小头像时是否仍能认出念真。文字或刻度生成错误时，优先后期排版修正，不必牺牲人物脸型来迁就文字。
+
+---
+
+## 1. 通用前缀（复制到每条 prompt 前面）
+
+**角色锚点**
+
+```text
+nianzhen, a 20-year-old Chinese college student, about 160 cm tall, slender with soft narrow shoulders, relaxed loose posture, soft oval face with slightly full lower cheeks and a short rounded chin, gentle rounded jawline, short dark-brown bob parted in the middle with slightly flipped ends and a small ahoge on top, hair tucked behind her left ear, one small gold hairpin on her LEFT side, thin nearly-straight eyebrows, eyes a little large with slightly downturned outer corners and warm amber irises with a faint teal rim, low nose bridge with a small round tip, full lower lip in pale rose, white dress shirt with sleeves rolled to the elbow under a dark teal knit vest, a small gold hoop in her LEFT ear only, a faint dimple on her RIGHT cheek
+```
+
+**风格锚点（中性基础；具体风格由各场景覆盖）**
+
+```text
+Japanese anime illustration, consistent character identity, anatomically coherent hands, intentional composition, controlled values, clean readable silhouettes, high-quality linework, no text; rendering technique, lighting, palette, texture, and camera treatment are defined separately for each scene, NOT inherited globally
+```
+
+**负面词**
+
+```text
+extra fingers, deformed hands, plastic skin, oversaturated, heavy bloom, text, watermark, signature, long hair, pink or blonde hair, school uniform, chibi, glasses (unless specified), multiple people (unless specified), sharp pointed chin, V-line jaw, extremely narrow face, high razor cheekbones, gaunt cheeks, model face, idol proportions, mature adult face, heavy makeup, tall runway model, extremely long legs, lowres, blurry, smeared linework, jpeg artifacts
+```
+
+> 脸型那几句（`soft oval face … short rounded chin`）和负面词里那几个锥子脸条目，都是因为不写它默认就削下巴，别删。
+
+### 1.1 分场景画风规则（替代全场景统一电影厚涂）
+
+**角色固定，表现手法不固定。** 所有场景仍沿用角色锚点；但禁止默认给每张图加金色夕阳、强散景、胶片颗粒、超细发丝或同一机位。每条场景 prompt 的 `SCENE STYLE` 优先于通用风格锚点。
+
+| 场景类型 | 表现语言 | 光与色 | 镜头/材质 |
+| --- | --- | --- | --- |
+| 夜读、听雨、停电 | 克制的动画电影分镜 | 暖台灯与冷夜色，按场景取舍 | 中近景、少量颗粒，不滥用散景 |
+| 白天校园、便利店、洗衣 | 清透赛璐璐日常番 | 自然日光或荧光灯，不强制暖色 | 平实取景、简洁阴影 |
+| 拍影子、建筑摄影 | 日系编辑插画、极简几何 | 上午冷白光、真实投影 | 广一点的环境镜头、纸张肌理 |
+| 手工、旧书、抄句子 | 彩铅淡彩、水彩或速写 | 柔和自然光、低饱和 | 保留手绘边缘与纸纹 |
+| 地铁、雨夜、屏幕 | 冷色都市分镜 | 青蓝、灰紫、局部灯光 | 空间留白、控制反光 |
+| 情绪头像 | 干净的角色动画设定 | 简洁主光，随情绪变化 | 面部可读性优先，少装饰 |
+| 概念场景 | 图形化、超现实或海报语言 | 按主题设计，不套固定 LUT | 更大胆的留白与形状设计 |
+
+**左右核验**：LEFT/RIGHT 一律指念真自身解剖学左右，不能按画面左右推断。左发夹、左耳圈、右脸酒窝不可镜像。酒窝仅在笑时出现；中性表情不画脸颊刻痕。若某角度看不见左耳，不要强行让耳环穿透头发出现。
+
+**投影核验**：明确实体、光源、受影平面；墙面与桌面阴影不要求在二维画面里平行，但必须由同一组三维光线投射。禁止无来源的实体化墙面花束。
+
+
+---
+
+## 2. 夜里那张书桌（她的主场景，最像「她本人」的一组）
+
+### 2.1 夜读 · 台灯下抬头（欢迎屏 3:4 推荐）
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: cinematic anime storyboard, warm practical desk lamp against restrained cool rainy window light, modest grain, intimate framing, no excessive bloom. sitting at a wooden desk by a rain-streaked window at night, an old paperback open under a warm desk lamp, a cold cup of tea, headphones resting on the open pages, she looks up from the book toward the viewer, pencil smudges on her knuckles, city lights blurred beyond the glass, warm amber key light from the lamp, cool blue rim light from the window, half-body, eye level
+```
+
+> 就是现在欢迎屏那张的「抬头版」，情绪更近。
+
+### 2.2 写代码写到卡住
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: graphic low-key anime frame, cool monitor glow, flat shadow masses, angular composition, restrained colors. slumped slightly in a chair, laptop glow on her face, one hand pushing her bangs up, the other tapping a pen against her chin, a sticky note stuck to the laptop edge, a mug and a small kalimba on the desk, screen light cool cyan, room otherwise dark, medium close-up, slightly high angle
+```
+
+### 2.3 弹卡林巴（只会三首）｜水彩淡彩重绘版
+
+**视觉方向**：透明水彩 × 自然铅笔线稿 × 阴天窗边漫射光。此场景刻意区别于系列中常见的暖黄夕阳和高精度数字厚涂。保持人物一致性，不强制继承其他场景的光线、材质或机位。
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: delicate traditional watercolor washes over loosely drawn pencil lines, visible cold-press watercolor paper texture, subtle pigment blooms and uneven edges, simplified hair masses with only a few expressive strands, muted blue-gray, cream and desaturated teal palette, gentle value hierarchy, quiet negative space; no glossy digital painterly finish.
+
+SCENE: a cloudy afternoon beside a modest window, soft diffuse daylight coming from the window on the image LEFT, no direct sunbeams and no hard window-grid shadows. Nianzhen sits naturally on a low chair near a small wooden desk, viewed in a medium three-quarter FRONT-SIDE angle, roughly 45 degrees, with her face, both hands and the instrument clearly visible. Her short rounded chin and slightly full lower cheeks must match the character reference; keep the small gold hairpin on HER anatomical LEFT side and a single tiny gold hoop in HER LEFT ear only, visible when the viewing angle permits. Neutral concentrated expression, no dimple unless smiling.
+
+ACTION AND INSTRUMENT: she is ACTUALLY PLAYING a small real wooden kalimba, not merely displaying it. The kalimba has a coherent wooden resonator body, one central sound hole and a single row of metal tines arranged with longer tines toward the center and shorter tines toward the edges. Both hands support the sides and back of the body; both thumbs are positioned at the FRONT metal tines with a plausible gentle plucking gesture, while other fingers curl behind the instrument. No extra fingers, no thumbs placed through the wood, no duplicated tines, no impossible grip.
+
+ENVIRONMENT: a closed notebook and a simple tea cup on the desk; a few soft leaves near the window, no dense decorative clutter. Use a restrained composition with breathable margins and a readable instrument silhouette. Natural cloudy light illuminates the window-facing surfaces; shadows are soft, coherent and low contrast. Vertical 3:4 illustration, human-scale anatomy, no text or watermark.
+
+NEGATIVE: golden-hour orange cast, bright direct sunlight, sharp window shadows, highly polished anime rendering, excessive hair-strand highlights, dense fabric microtexture, overloaded desk props, glamour portrait, pointed chin, glossy skin, impossible kalimba fingering, mirrored hairpin or earring, split panels, collage.
+```
+
+**出图检查**：优先检查①双拇指是否真正触及琴键、其他手指是否托住琴身；②左侧配饰是否符合人物解剖方向；③是否为阴天柔光而非夕阳硬影；④头发、衣料是否保留水彩概括而非回到细密数字厚涂。若只满足“好看”却未满足演奏动作，应重画。
+
+### 2.4 听雨 · 耳机搁在书页上
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: sparse atmospheric anime illustration, translucent rain washes, soft cool grays, minimal linework, selective warm accents. chin resting on her folded arms on the desk, looking out at the rain running down the window, headphones lying on an open notebook beside her, a dried flower pressed between the pages, warm lamp light on her hair, cool rain light on her face, close-up, very shallow depth of field
+```
+
+### 2.5 趴在桌上睡着（凌晨三点）
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: overhead editorial drawing, muted warm grays, quiet graphic shadow shapes, restrained details. asleep with her cheek on an open notebook, one arm still holding a pencil, lamp still on, a half-finished page of handwriting, a mug gone cold, hairpin catching a small highlight, warm pool of light in a dark room, top-down three-quarter view
+```
+
+### 2.6 停电 · 蜡烛和卡林巴
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: limited-palette chiaroscuro animation frame, candlelit amber against near-black blue, no extra ambient lights. sitting on the floor with her back against the desk, a single candle on a saucer, kalimba in her lap, face lit only by the flame, phone screen dark beside her, deep shadows, warm orange key light, night interior, medium shot
+```
+
+---
+
+## 3. 白天 · 她的日常（20 岁大学生那面）
+
+### 3.1 清晨 · 窗边发呆
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: airy slice-of-life cel animation, clean flat colors, pale natural daylight, simple shadows. standing by the window in the early morning, holding a warm mug with both hands, hair still slightly messy, soft white daylight, dust motes in the air, plants on the sill, calm half-awake expression, waist-up, backlit
+```
+
+### 3.2 便利店 · 关东煮
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: candid urban anime snapshot, fluorescent neutral lighting, flat cel shadows, lively but not glossy. standing at a convenience store counter at night, holding a paper cup of oden, steam rising, fluorescent green-white light mixed with the warm glow of the heater, shelves of snacks softly blurred behind, looking down at the cup, waist-up, candid snapshot feel
+```
+
+### 3.3 地铁末班车
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: cool-toned cinematic animation storyboard, blue-gray night reflections, long horizontal composition, subtle motion blur. sitting alone on the last train, headphones on, cheek against the window, city lights streaking past, a tote bag on her lap with a notebook sticking out, cool interior light, slightly tired eyes, medium shot, reflection in the glass
+```
+
+### 3.4 走路 · 口袋里的糖
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: observational anime street sketch, blue-hour wet pavement, loose lines, restrained reflected colors. walking slowly on a quiet street after rain, unhurried, stopping half-way to look at the light on the wet asphalt, one hand in her coat pocket pulling out a wrapped candy, the pocket visibly bulging with stickers and a bit of string, wet asphalt reflections, evening blue hour, three-quarter back view turning her head toward the viewer, full body, environmental
+```
+
+### 3.5 晒被子 / 晾衣服（生活气）
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: light watercolor slice-of-life, bright natural whites, breezy negative space, gentle pencil outlines. hanging laundry on a small balcony, sheets billowing in the wind, late afternoon sun, she is squinting against the light with one hand shading her eyes, clothespins in her mouth, casual and unposed, medium wide shot
+```
+
+---
+
+## 4. 她的爱好（拍照 / 手工 / 旧书 / 抄句子）
+
+### 4.1 拍照 · 只拍光和影子（新版：上午的旧楼梯间）
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: restrained Japanese editorial anime illustration, clean cel shading, simplified architectural geometry, understated ink outlines, subtle matte paper texture, muted cool whites and pale blue-grays, no golden-hour glow, no glossy painterly finish. A quiet old university stairwell at 10 a.m.; large windows on the IMAGE LEFT, off-white plaster walls, pale concrete stairs and an aged handrail. Nianzhen stands in the IMAGE RIGHT THIRD, photographed from behind and slightly toward HER ANATOMICAL LEFT, so her LEFT hairpin and LEFT hoop earring are visible if not occluded. She raises a small black mirrorless camera to her eye: HER RIGHT hand grips the body and presses the shutter, HER LEFT hand supports the lens. Camera lens aims at the sunlit wall, not at the viewer. Her shoulders are relaxed, one knee slightly bent. She photographs the crisp rectangular window-frame shadows and a few real tree-branch shadows; architectural light and negative space dominate the IMAGE LEFT TWO-THIRDS. One morning sunlight source enters from the upper IMAGE LEFT; all shadows on walls, steps and railings obey this single 3D light direction, with natural changes in projection at corners. Vertical 3:4 environmental medium-wide shot, quiet observational mood, no other people, no extra props, no text.
+```
+
+> **核验**：人物在画面右侧 ≠ 人物右耳朝镜头。镜头从她自身左后方拍，优先看见左耳与左发夹；右手快门、左手托镜头。墙与楼梯阴影由同一窗光投射，但在画面上不必平行。此场景不用干花和猫影，避免与 4.4 混淆。
+
+### 4.2 手工 · 黏土小东西
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: textured colored-pencil illustration with warm off-white paper grain, tactile clay surfaces, loose hand-drawn edges. sitting at a table covered with clay scraps, sculpting a tiny cat with a toothpick, fingertips dusty, small finished figures lined up beside her, warm lamp light, cluttered cozy table, close medium shot, hands in focus
+```
+
+### 4.3 旧书店 · 蹲在书架前
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: nostalgic gouache-and-ink illustration, dusty olive and ochre, visible brush texture, graphic bookshelf shapes. crouching in the narrow aisle of a second-hand bookstore, pulling out a worn paperback, dust floating in a shaft of light, shelves packed to the ceiling, warm brown and deep green tones, three-quarter view, medium wide shot
+```
+
+### 4.4 抄句子 · 本子和干花
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: delicate watercolor sketchbook illustration, soft graphite lines, pale desaturated pigments, real paper texture, no dramatic golden-hour lighting. writing in a small notebook with a fountain pen, a dried flower and a paper bookmark beside it, tea steaming at the edge of frame, soft window light from the left, overhead close-up of the desk and her hands, pencil-gray knuckles
+```
+
+### 4.5 翻旧网页 · 复古终端
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: retro digital anime frame, CRT phosphor green and charcoal palette, graphic scanlines, controlled hard-edged shading. leaning close to an old CRT monitor displaying a green-text BBS interface, the screen glow tinting her face pale green, one hand on the keyboard, nostalgic smile, dark room, scanlines visible, medium close-up
+```
+
+---
+
+## 5. 情绪特写（做头像、表情、分享图）
+
+### 5.1 真笑出声（右脸酒窝）
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: clean expressive anime character animation cel, simple neutral background, readable facial acting, no painterly gloss. laughing with her eyes closed, faint dimple visible on her RIGHT cheek only, one hand raised near her mouth, head slightly tilted, warm backlight behind her, soft bokeh, close-up portrait, square composition
+```
+
+### 5.2 被戳到 · 沉默三秒
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: sparse ink-and-wash portrait, strong negative space, muted gray-green, understated shading. eyes lowered, lips pressed together, holding a pen a little too tightly, the lamp light catching only half her face, quiet and slightly guarded, close-up, negative space on the left
+```
+
+### 5.3 嘴硬 · 撇头
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: crisp graphic anime portrait, flat colors, bold but economical expression lines, balanced cool and warm. turning her head away with a small stubborn pout, one eyebrow slightly raised, arms loosely crossed, cool window light on one side, warm lamp on the other, three-quarter bust shot
+```
+
+### 5.4 专注 · 屏幕映在眼睛里
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: minimal high-contrast screenlit anime close-up, cyan reflections, deep charcoal shadow shapes. staring at something off-frame with total focus, faint screen glow reflected in her eyes, lips slightly parted, dark background, single cool light source, extreme close-up on the face
+```
+
+### 5.5 困 · 眼睛半睁
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: loose morning sketchbook drawing, light pencil lines, pale wash, minimal texture. half-asleep, chin in her palm, eyelids heavy, hair slightly flattened on one side, morning light, mug in the other hand, dry humor in her expression, bust shot, soft focus
+```
+
+### 5.6 得意 · 坏笑
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: playful editorial cel illustration, simple color blocking, restrained expressive highlights. a small mischievous smirk, one corner of her mouth up, chin lifted, holding a candy between two fingers as if offering a bribe, warm rim light, dark green background, bust shot
+```
+
+---
+
+## 6. 「从他的角度」（POV：访客坐在她对面）
+
+### 6.1 隔桌对坐 · 她在写字
+
+```text
+first-person POV across a wooden desk, nianzhen [角色锚点] writing in a notebook, only her lowered eyes and the pen visible above the page, a cup of tea and her phone face-down near the viewer's edge of the table, warm lamp from her side, cool window light behind, hands in the foreground slightly out of focus, wide 3:4 SCENE STYLE: quiet slice-of-life anime storyboard, natural eye-level perspective, soft flat shading, subtle warm-cool contrast.
+```
+
+### 6.2 被叫住 · 回头
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: cinematic corridor animation still, graphic perspective lines, restrained pools of light, slight motion. seen from behind, she is walking away down a dim corridor and turning her head back over her shoulder at the viewer, hair swinging, one hand holding a tote bag, warm light at the far end, shallow depth of field, vertical composition
+```
+
+### 6.3 递东西 · 手部特写
+
+```text
+close-up POV, two hands meeting over a table, nianzhen's hand offering a wrapped candy and a sticker, pencil smudges on her knuckles, a small gold hoop earring catching light at the edge of frame, warm lamp light, very shallow depth of field, soft focus background SCENE STYLE: tactile pencil-and-watercolor detail study, paper grain, selective focus, gentle neutral lighting.
+```
+
+### 6.4 她凑过来看你的屏幕
+
+```text
+POV looking down at a laptop, nianzhen leaning in from the right side of frame, chin near the viewer's shoulder, eyes on the screen, one finger pointing at something, her hairpin glinting, keyboard glow on both faces, intimate low light, 16:9 SCENE STYLE: cool contemporary anime film frame, screenlit faces, uncluttered shapes, restrained glow.
+```
+
+### 6.5 「你拍我干嘛」
+
+```text
+POV, nianzhen looking up at the viewer with a mildly annoyed but amused expression, one hand half-raised to block the camera, the other still holding a book, sitting on the floor by a bookshelf, warm interior light, candid framing slightly off-center SCENE STYLE: spontaneous clean-line anime snapshot, simple lighting, natural off-center framing.
+```
+
+### 6.6 手机自拍（她不爱自拍）
+
+```text
+smartphone selfie angle, nianzhen holding the phone slightly too low, awkward half-smile, ceiling light harsh, messy desk visible behind her, a cat tail entering the frame at the bottom, deliberately unglamorous and funny, 3:4 SCENE STYLE: intentionally unpolished smartphone-like anime frame, flat ceiling light, slight perspective awkwardness, no cinematic grading.
+```
+
+---
+
+## 7. 天气与季节
+
+### 7.1 雨夜 · 玻璃上的水痕
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: atmospheric blue-gray watercolor anime, wet glass washes, sparse warm accents, low saturation. standing at a large window during heavy rain, forehead almost touching the glass, raindrops casting moving shadows on her face, city bokeh outside, cool blue tones with one warm lamp behind her, waist-up, side profile
+```
+
+### 7.2 初雪 · 伸手接
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: airy winter cel illustration, cool pale blue and white, soft simple snow shapes, clean outlines. standing on a rooftop at the first snow, one hand out to catch a flake, scarf wrapped to her chin, breath visible, grey-blue dusk, snowflakes as soft bokeh, full body, wide shot
+```
+
+### 7.3 夏夜天台 · 汽水
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: graphic summer-night animation still, deep indigo and muted city lights, minimal glow. sitting on the edge of a rooftop at night, legs dangling, a glass bottle of soda beside her, city lights below, warm streetlight from below and cool sky above, relaxed and slightly lonely, medium wide shot from behind
+```
+
+### 7.4 秋天 · 银杏和干花
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: autumn gouache illustration, ochre foliage and muted greens, textured dry brush, not glossy. walking under ginkgo trees in autumn, holding a book with a dried flower pressed inside, golden leaves falling, low afternoon sun through the branches, warm amber palette, medium shot, motion in the hair
+```
+
+### 7.5 台风天 · 窗户在响
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: rough expressive weather storyboard, stormy blue-gray washes, strong directional shapes, low-key interior. sitting on the floor wrapped in a blanket, knees to her chest, watching the rain hammer the window, a candle and a kalimba beside her, phone screen lighting her face from below, deep blue-green shadows, medium shot
+```
+
+---
+
+## 8. 概念向（适合文章头图 / 关于页）
+
+### 8.1 对话框悬浮
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: minimalist conceptual editorial illustration, abstract translucent geometry, generous negative space, controlled monochrome. sitting in a dark room, faint translucent chat bubbles floating around her like dust, none of them readable, she is looking at one of them, screen glow, surreal but quiet mood, 16:9
+```
+
+### 8.2 屏幕光里的两个人（她与她的倒影）
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: psychological graphic anime composition, restrained cyan-gray palette, symmetrical flat shapes. facing a dark monitor, her reflection faintly visible in the glass, the reflection slightly different in expression, cool cyan light, symmetrical composition, medium shot
+```
+
+### 8.3 数据流 · 夜色
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: stylized science-fiction editorial poster, precise luminous lines, dark teal geometry, controlled contrast. standing on a rooftop with a city of light below, thin luminous lines like data streams drifting upward through the air, wind in her hair, teal and amber contrast, cinematic wide shot, 16:9
+```
+
+### 8.4 旧书页里的光
+
+```text
+[角色锚点 + 风格锚点] + SCENE STYLE: magical-realist watercolor-and-ink book illustration, soft luminous wash, textured paper, minimal effects. holding an old book open, warm light spilling out from between the pages onto her face, dust motes, dark background, magical realism, close-up, vertical
+```
+
+### 8.5 抽屉里的东西
+
+```text
+flat lay on a wooden desk: a small gold hairpin, a kalimba, a fountain pen, a dried flower, two wrapped candies, a sticker sheet, a short piece of string, a worn paperback with pencil notes, warm lamp light from the top left, no people, 1:1 SCENE STYLE: quiet analog flat-lay editorial illustration, colored-pencil texture, matte muted colors, soft overhead light.
+```
+
+> 这张没有人物，但最像「她的抽屉」，适合做关于页或文章配图的过渡。
+
+---
+
+## 9. 画幅与用途对照
+
+| 用途 | 画幅 | 推荐条目 |
+| --- | --- | --- |
+| 聊天头像（30px 还认得出） | 1:1，脸占 60% | 5.1 / 5.6 |
+| 欢迎屏自画像 | 3:4 | 2.1 / 2.4 |
+| 关于页 / 分享图 | 1:1 或 4:5 | 2.2 / 4.2 / 8.5 |
+| 文章头图 | 16:9 | 6.4 / 8.1 / 8.3 |
+| 表情图（半身、情绪明确） | 1:1 | 5.2 / 5.3 / 5.5 / 6.5 |
+
+---
+
+## 10. 一致性怎么保（比 prompt 更重要）
+
+1. **先定妆照，再派生**：先用第 0 节出一张满意的，之后每张都把它当参考图。
+   - Midjourney：`--cref <定妆照URL> --cw 80`（衣服和发型跟着走，表情还自由）
+   - SD / Flux：img2img 或 IP-Adapter，denoise 0.45–0.6
+   - 自然语言模型（GPT-Image / Nano Banana 之类）：直接说「同一个人，参考这张图的发型、发夹位置、服装，只改场景和动作」
+2. **三条锚点每张都写**：金色一字夹在**左**、小金圈耳环在**左**、酒窝在**右脸**。这三句一漏，脸就开始漂。
+3. **脸型要写结构，别写形容词**：`soft oval face, slightly full lower cheeks, short rounded chin, gentle rounded jawline` 四条一起写，负面词带 `sharp pointed chin, V-line jaw, gaunt cheeks`。只写「可爱/年轻」它就会给你锥子脸（见 0.1）。
+4. **锁 seed**：同一组场景用同一个 seed，只改场景词；换 seed 等于换人。
+5. **一次只改一个变量**：先固定人和光，再换动作；同时改场景、光线、服装，角色会散。
+6. **别让她穿别的**：青绿针织背心 + 白衬衫是识别符；确实需要换装（比如睡衣、外套）时，保留发夹、耳圈和发型。
+7. **站姿要松**：手插口袋、重心偏在一侧、肩膀不抬。她随性，不紧绷——站得笔直的姿势会让她像在拍样片，不像她。
+8. **手要单独检查**：她这组图大量是握笔、弹琴、捏黏土，手最容易崩，出图后放大看指节。
+9. **情绪不要过**：她是「嘴硬心软」，不是元气少女。笑是收着的，眼睛比嘴先笑。
+
+---
+
+## 11. 还缺的（等你挑）
+
+- 猫：相册里永远拍不全，可以画「只有半只猫入镜、她对焦失败」的那张。
+- 卡林巴三首：可以画成三个不同时刻（第一次学会、弹给她自己听、弹给镜头外的人听）。
+- 她是 INTP：可以来一张「内心在反驳自己」的分屏式构图（现实里安静，倒影/玻璃里在说话）。
+- 旧 BBS：像素绿的终端 + 现代的脸，反差感最强。
+
+---
+
+## 12. 专业设定稿（三视图 / 表情表 / 细节表 / 景别）
+
+设定稿和插画是两种图：插画讲气氛，设定稿讲**可复现**——同一张脸，从任何角度、任何景别看都对。做一套下来，之后所有插图都能拿它当参考图，一致性会稳很多。
+
+### 12.1 先说要提前知道的
+
+- **别指望一张图搞定全部**。模型同时画四个人体时，比例、衣褶、脸常常各画各的；专业做法是**一个视图一张**、锁同一个 seed、互相做参考图，最后自己拼版。
+- **不要让它写字**。设定稿上的「正面 / 侧面 / 表情名 / 材质说明」模型会画成鬼画符。出图时留白，字自己加。
+- **设定稿用平光**：不要电影光、不要景深、不要氛围光，否则看不出结构。
+- 建议底色：纯白 `#ffffff` 或浅灰 `#f2f2f2`，配浅灰构造线。
+
+### 12.2 三视图（turnaround）
+
+```text
+character turnaround sheet, three full-body views of the SAME character side by side on a plain white background: front view, left side view, back view, standing in a relaxed A-pose, feet shoulder-width, arms slightly away from the body, neutral expression, even flat studio lighting, no shadows, orthographic feel, thin light-grey construction lines, consistent height and proportions across all three, nianzhen [角色锚点], [风格锚点 without cinematic lighting]
+```
+
+- 背面很容易被画成另一个人，务必附上定妆照当参考（`--cref`，权重高一些 `--cw 100`）。
+- A-pose 比 T-pose 更像人，衣服褶皱也更自然。
+
+### 12.3 四向旋转（3/4 视角四连）
+
+```text
+character rotation sheet, four views of the same character at 90-degree increments: front, three-quarter front-right, right profile, back, on a light grey background, full body, same pose and lighting, flat even light, reference-sheet style, nianzhen [角色锚点]
+```
+
+> 这一张最有用：正面之外，3/4 是插画里最常用的角度。
+
+### 12.4 表情表（3×3 九宫格）
+
+```text
+expression sheet, 3x3 grid, the SAME head and shoulders at the same angle and lighting in all nine cells, white background, nine expressions: calm, faint closed-mouth smile, genuinely laughing with the right-cheek dimple showing, annoyed, stubborn pout turning away, sleepy half-lidded, focused, mildly surprised, teasing smirk, identical hairstyle and gold hairpin on the left in every cell, flat even lighting, thin cell borders, nianzhen [角色锚点]
+```
+
+- 九个表情里的「真笑」「嘴硬」「困」「坏笑」正好对应她的人设，别画成元气少女的九连拍。
+- 一格里表情不对，就把那格单独裁出来重画，别整张重来。
+
+### 12.5 服装与细节表
+
+```text
+costume and detail sheet on a white background, inset close-ups arranged in a grid: the collar and top button of a white dress shirt, a sleeve rolled to the elbow with visible folds, the ribbed texture of a dark teal knit vest, a small gold hairpin on the left side of dark-brown hair, a tiny gold hoop in a left ear, a hand with pencil smudges on the knuckles, a fountain pen, a small kalimba, a dried flower and a paper bookmark, flat even lighting, technical illustration feel, no labels, nianzhen [角色锚点]
+```
+
+### 12.6 比例与身高线
+
+```text
+character proportion chart on a white background, full body standing straight, 7-head proportions, head-unit grid lines drawn across the figure, side-by-side comparison of the head at 1x, 2x and 3x, thin grey guide lines, flat lighting, technical reference style, nianzhen [角色锚点]
+```
+
+> 她的设定是 20 岁大学生，7 头身左右；写太高会变成 idol 体型。
+
+### 12.7 景别五连（同一姿态，只改取景）
+
+同一个动作、同一个角度，只变取景，这是最容易看出「这五张是不是同一个人」的检验：
+
+| 景别 | 取景 | prompt 结尾的镜头描述 |
+| --- | --- | --- |
+| 远景 | 环境占 70%，人小 | `extreme wide shot, character small in the frame, environment dominant, 24mm` |
+| 全景 | 全身入镜 | `full shot, entire body in frame, 50mm` |
+| 中景 | 膝盖以上 | `medium shot, waist-up, 50mm` |
+| 近景 | 胸以上 | `medium close-up, chest up, 85mm` |
+| 特写 | 脸占满 | `close-up, face fills the frame, 135mm` |
+| 大特写 | 眼睛或手 | `extreme close-up on the eyes, 135mm` |
+
+用法：拿 12.2 的三视图当参考图，固定 seed 和 prompt 主体，只替换上表那半句。五张能接成一个人，这套设定就立住了。
+
+### 12.8 色卡（手抄，别让模型写）
+
+| 元素 | 色值 |
+| --- | --- |
+| 发色（深棕近黑） | `#2b2320` |
+| 衬衫白（偏米） | `#f2f0ea` |
+| 针织背心（青绿） | `#2f4f4a` |
+| 金色配件 | `#c8a558` |
+| 台灯暖光 | `#ffb570` |
+| 夜色 | `#1b1b1e` |
+| 屏幕冷光 | `#7aa7d9` |
+
+### 12.9 建议的产出顺序
+
+1. 12.2 三视图 → 挑一张最稳的，存为「角度锚点」
+2. 12.4 表情表 → 只留需要的 4–6 格，裁成单张表情
+3. 12.3 四向旋转 + 12.5 细节表 → 当素材库
+4. 用上面三份做参考图，再回头画第 1–8 节那些插画
+5. 12.7 五连景别 → 每画完一张插画，顺手用它验一次「还是同一个人吗」
+
+> 以上是按「单张素材」出的。真要做成一张给别人看的**设定稿**（档案卡 + 三视图 + 表情行 + 细节 + 配色 + 动态），看第 15 节的版式和分块清单。
+
+---
+
+## 13. 配色（每个部位一个色号）
+
+出图时**别把 hex 塞进 prompt**（多数模型不认十六进制，塞了只会占字数）。正确用法是：先按下面的色卡定调，出图后拿色卡去校色 / 提词里只用颜色名 + 冷暖描述。
+
+### 13.1 部件配色表
+
+| 部位 | 说明 | HEX | prompt 里的说法 |
+| --- | --- | --- | --- |
+| 头发（底色） | 深棕近黑，偏冷 | `#2B2320` | dark espresso brown |
+| 头发（高光） | 灯光下的一层暖 | `#4A3C33` | warm brown highlight |
+| 皮肤（亮部） | 米白偏暖 | `#F5DFD2` | warm pale skin |
+| 皮肤（中间调） | 脸颊与脖子 | `#EEC9B8` | — |
+| 皮肤（阴影） | 下颌、颈侧 | `#D9A894` | — |
+| 腮红 | 很淡，只扫一点 | `#EFB8AE` | soft peach blush |
+| 眼睛（虹膜） | 琥珀偏青 | `#B98A3E` → 外圈 `#4E7F78` | amber-teal irises |
+| 眼睛（高光） | 双层高光，偏暖 | `#FFF6E0` | — |
+| 眉毛 | 比头发浅一档 | `#3A2E28` | thin dark brows |
+| 唇 | 自然偏珊瑚 | `#D98C82` | coral-tinged lips |
+| 衬衫 | 偏米的纸白 | `#F3EFE7` | off-white dress shirt |
+| 衬衫阴影 | 袖口、腋下 | `#DCD5C8` | — |
+| 针织背心 | 深青绿 | `#2F4F4A` | dark teal knit vest |
+| 背心高光 | 针织起毛处 | `#436B63` | — |
+| 金属（发夹/耳圈） | 暗金，不是亮金 | `#C8A558` | small gold hairpin |
+| 金属高光 | 点一下 | `#E8CE93` | — |
+| 铅笔灰 | 指节、纸边 | `#6E6A66` | graphite smudges |
+| 台灯暖光 | 场景主光 | `#FFB570` | warm amber lamp light |
+| 夜色 | 窗外/暗部 | `#1B1B1E` | deep night blue |
+| 屏幕冷光 | 电脑前的补光 | `#7AA7D9` | cool screen glow |
+
+> 两套青绿别混：**背心是深青绿 `#2F4F4A`**（衣服），**站点品牌青绿 `#22C3AA`/`#3FD1E1`** 只用在网页背景渐变和 UI，别画到衣服上。
+
+### 13.2 出图用的「带色块标注」版本
+
+模型会把文字画成鬼画符，所以**只让它画色块和引线**，字自己加：
+
+```text
+character color reference, the same character in three-quarter view on a plain light-grey background, with eight clean circular color swatches arranged in a column on the right, each swatch connected to a body part by a thin straight leader line: hair, skin, iris, lips, shirt, knit vest, gold hairpin, graphite smudge, swatches filled with flat color only, no text, no letters, flat even lighting, design-sheet layout, fine crisp linework, ultra-detailed
+```
+
+后期在 Figma / Photoshop 里补 `#2B2320 头发` 这样的标签。**顺序固定**（从上到下：发、肤、瞳、唇、衬衫、背心、金属、铅笔灰），方便每张图都对齐。
+
+### 13.3 出图后怎么校色
+
+1. 取一张最满意的图，用吸管在每个部位取一次色，和 13.1 对比
+2. 偏差超过一档（比如背心变成亮青）就不要了，重出；小偏差用「色彩平衡 / 可选颜色」拉回来
+3. 同一批图统一套一个 LUT 或曲线，色调才一致
+
+---
+
+## 14. 画质与 4K
+
+### 14.1 prompt 里怎么写
+
+**别单写 `4K`。** Midjourney 会忽略，SD 不认字符，多数模型只把它当噪声。有效的是这四句：
+
+```text
+fine crisp linework, ultra-detailed, sharp focus, high resolution
+```
+
+需要更硬的质感再加：`intricate details, clean edges, no blur, print quality`。
+负面词补：`lowres, blurry, smeared linework, jpeg artifacts, oversharpened, banding`。
+
+### 14.2 真正的 4K 靠放大，不靠 prompt
+
+- **原生分辨率**：MJ 默认 1024²（v7 可 `--ar` 到 2K 左右）；SD/Flux 原生 1024–1536。直接要 3840 宽，模型会给你放大的糊图。
+- **流程**：原生出图 → 选图 → 放大到 2 倍 → 再 2 倍（或一次 4 倍），每步之间做一次轻度锐化/降噪。
+- 工具：MJ 的 `--upgrade`（Creative / Subtle 两档）；SD WebUI 的 Hires.fix（2×，denoise 0.35–0.45）+ 4× 超分（ESRGAN / 4x-UltraSharp）；Topaz Gigapixel 也行。
+
+**本项目的实测口径**：定妆照走「拼好的 1920 母版 → Real-CUGAN 2× · 无降噪 → 3840×2560」。不用 ESRGAN（更锐，但把睫毛/发丝描成暖红边、冷灰蓝针织推成暖铜色），也不用 waifu2x（几乎不偏色，可锐度与纯插值持平）。理由与四版数据见 `_tabs/persona.md` 第 10 节。
+
+### 14.3 站内实际要多大
+
+| 用途 | 交付尺寸 | 说明 |
+| --- | --- | --- |
+| 聊天头像 | 512×512 | 源图留 1024² 备未来换 2x 屏 |
+| 欢迎屏自画像 | 900×1200 | 源图出 1800×2400 再缩 |
+| 关于页 / 文章配图 | 1600 宽足够 | 4K 是给「以后可能印出来」留的余量 |
+| 打印 / 设定稿 | 300 dpi，A3 约 3508×4961 | 这类才真的需要 4K+ |
+
+> 记住一条：**网页上用不到 4K**，站点上的图 1600 宽就够；4K 是母版，用来以后裁切、印刷、重排版。
+
+---
+
+## 15. 一页讲完一个人：参考设计稿里能直接用的东西（2026-11-16 修订）
+
+看过那几张参考（一页式角色设定图、完整维度清单、两张男角色 full sheet），共同骨架其实只有一个：
+
+> **左边一张档案卡，右边一块块「证据」。**
+
+档案卡答「她是谁」，右边每一块都是用图回答一个问题：长什么样（三视图）、笑起来什么样（表情行）、这些小东西为什么在她身上（细节特写）、什么颜色（配色+材质）、带着什么（道具）、动起来什么样（动态）、一句话概括（气质关键词+视觉符号）。
+
+### 15.1 念真版一页设定稿（整版 prompt，当前修订版）
+
+本版在原布局上更新了**右下回眸头像**、**三视图身高标尺**、**手部石墨痕迹**与**表情符号**。**第四个表情头顶的两个空心气泡必须保留**；其余表情周围不得出现黄色五角星或不明装饰。建议用定妆锚点作为人物参考；涉及精确刻度和文字的部分优先后期排版。
+
+```text
+Single-page Nianzhen character design sheet, landscape 3:2, organized editorial grid on warm neutral off-white paper, thin muted teal dividers, clean hand-drawn anime character design, natural pencil line variation, restrained cel shading, subtle localized paper texture, no excessive vintage yellow filter.
+
+CHARACTER IDENTITY: same 20-year-old Chinese college student across every panel, 160 cm, approximately seven-head proportions, full lower cheeks, soft rounded short chin, thin nearly straight brows, warm amber eyes with faint teal rim, short espresso-brown center-parted bob with lightly flipped ends and one small curved ahoge; small straight gold hairpin on HER anatomical left (viewer's right in frontal views), small gold hoop on HER left ear only, right ear bare. Off-white rolled-sleeve shirt, dark teal knit vest, loose charcoal trousers, white sneakers.
+
+LEFT COLUMN: large three-quarter head-and-shoulders portrait, quietly resting cheek on one hand; below, clean Chinese profile area reading 念真 / 年龄 20岁 / 身高 160 cm / 身份 大学生, and five color chips. Keep her face soft and rounded, not V-shaped.
+
+TOP MIDDLE: three full-body turnaround views, FRONT / SIDE / BACK, identical body proportions, feet aligned to the same ground baseline at 0 cm. A single mathematically evenly spaced vertical ruler from 0 to 170 cm with major ticks every 10 cm, minor ticks evenly spaced; the top of NORMAL HAIR in all three views exactly meets 160 cm, with ONLY the small ahoge rising slightly above toward about 165 cm. Keep all three figures aligned and equally scaled; no distorted numbers or irregular spacing. If accurate scale cannot be rendered, leave ruler area clean for precise vector overlay.
+
+TOP RIGHT: exactly FIVE head-and-shoulders expressions in one row, same face, same outfit: (1) calm/neutral, (2) restrained smile with tiny right-cheek dimple, (3) slightly sulky/pensive, (4) sleepy yawn with eyes closed AND TWO SMALL HOLLOW COMIC BUBBLES ABOVE HER HEAD, (5) surprised with a few restrained dark exclamation marks. The two hollow bubbles belong ONLY to expression 4 and must be preserved. NO yellow stars, yellow fragments, decorative sparkles, floating symbols near necks or cheeks, or confusing ornaments on expressions 1–3.
+
+MIDDLE RIGHT DETAIL ROW: four clean macro studies: (1) anatomical-left gold hairpin, (2) left ear with one small gold hoop, (3) naturally colored hand with ONLY small soft light-gray graphite smudges on parts of the thumb, index finger and middle finger; skin remains clearly visible, never blackened fingertips or ink-soaked fingers, (4) fabric pocket with small cat patch, wrapped candy, sticker and short string. The hand has five anatomically correct fingers.
+
+RIGHT MATERIAL ROW: four tactile swatches of off-white cotton, dark teal knit, aged muted-gold brass, and pale aged paper; subtle texture, no harsh grunge.
+
+BOTTOM MIDDLE: three small everyday activity drawings showing writing at a desk, walking with a mirrorless camera, and sitting with a wooden kalimba. Same face, hair, outfit, and anatomical left-side accessories.
+
+BOTTOM RIGHT: wide horizontal over-the-shoulder portrait of Nianzhen turning back after someone calls her, soft slightly surprised expression, short bob moving naturally, gold hairpin and left-ear hoop visible, dark teal vest and backpack strap; muted gray-teal outdoor wall with soft foliage shadows, gentle natural daylight, subdued warm highlights, not a repeat of the desk-night portrait. Match facial proportions to the large portrait on the left.
+
+STRICT: maintain identical panel geometry, no extra panels, no distorted hands, no mirrored hairpin or earring, no yellow stars in expression row, no opaque black fingertips, no mismatched scale, no new captions or unreadable invented text, no glossy commercial anime rendering.
+```
+
+**出图后验收**：① 表情 4 上方两个空心气泡保留；② 表情 1–3 颈侧没有黄色星星；③ 手部仅有淡灰色石墨蹭痕，保留肤色；④ 三视图脚底同在 0 cm、正常头发顶部 160 cm；⑤ 右下为回眸肖像而非夜读。标尺和中文信息若有错，后期用矢量文字与等距刻度覆盖，不要为了修数字反复重绘五官。
+
+### 15.2 分块清单（每块单独出图，最后拼版）
+
+| # | 块 | prompt 主体（接 [角色锚点 + 风格锚点]） | 版面上的说明文字（后期加） |
+| --- | --- | --- | --- |
+| 1 | 档案卡竖幅 | `three-quarter portrait, chest up, looking slightly off camera, soft window light, plain warm background` | 20 岁 · 160 cm · 7 头身 · 写网页的、拍照的、弹卡林巴的 |
+| 2 | 三视图 | `full-body turnaround, front view, side view, back view, identical proportions and ground baseline at 0 cm, normal hair top at 160 cm, small ahoge slightly above, plain background, flat even light; leave ruler for vector overlay if needed` | 正视 / 侧视 / 背视，左边缘画身高刻度 |
+| 3 | 表情行 | `five head-and-shoulders crops in a row, same face and light: calm listening; holding back a laugh; slightly sulky; sleepy yawn with exactly two small hollow comic bubbles above the FOURTH head only; surprised with restrained dark exclamation marks, NO yellow stars or floating ornaments near necks` | 沉静 / 憋笑 / 嘴硬 / 困 / 被拍到 |
+| 4 | 细节特写 | `macro close-up, neutral light: gold hairpin on her anatomical left; small gold hoop on left ear only; fair-skinned hand with very light soft-gray graphite smudges on small portions of thumb, index and middle fingers, NOT blackened fingertips; coat pocket with stickers, a wrapped candy and a short piece of string` | 每张配一句为什么（见 15.4 第 1 条） |
+| 5 | 材质色板 | `four square swatches, top-down, soft studio light: cotton shirting, teal knit, aged brass, yellowed paper` | 棉 / 针织 / 黄铜 / 旧纸 |
+| 6 | 三状态全身 | `three daily-life vignettes, same character: at the desk writing code, walking outside with a camera in hand, sitting on the floor with a kalimba` | 写代码 / 拍照 / 弹琴 |
+| 7 | 动态细节 | `walking slowly and stopping to look at the light, coat tail and hair strands lifting in the wind, sleeves always rolled to the elbow` | 走路会停 / 头发被风吹乱 / 袖子永远卷着 |
+| 8 | 气质与符号 | `a wide horizontal over-the-shoulder portrait, she turns back after being called, soft surprised expression, gold hairpin and left-ear hoop visible, muted gray-teal outdoor wall and soft foliage shadows, gentle natural daylight, same rounded face as the main portrait` | 气质：随性 · 慢半拍 · 嘴硬心软；符号：青绿渐变 + 坐标网格、光斑、金色一字夹 |
+
+### 15.3 版式怎么拼
+
+- 网格按 12 栏，左边 4 栏给档案卡，右边 8 栏摊六块；每块左上角留一个 24px 的小标签（「三视图」「表情神态」这种）。
+- 字号只分两级：标签 12px、说明 10px，正文别超过三行。
+- 色块直接从第 13 节取 hex，别在 PS 里重新调色，否则和出图不一致。
+- 中文用思源黑体 / 苹方，英文小字用等宽（IBM Plex Mono 之类），中间那行拉丁文说明用斜体。
+- 留白要够：参考稿里每块之间至少 24px，挤在一起就变成「拼图」而不是「设定稿」。
+
+### 15.4 参考稿里最值得偷的三条
+
+1. **细节要配一句解释**。参考稿里写「手掌有薄茧，常年劳作与练剑」——图谁都会画，那句解释才是设计。念真的细节也都配有理由：一字夹是旧的、右边才有酒窝、指节的铅笔灰洗不太掉、口袋里的糖和贴纸是随手塞的。
+2. **给三种状态，而不是三套衣服**。阿竹那张是「日常 / 劳作 / 练剑」，同一件衣服在不同动作里。念真同理：写代码、出门拍照、弹卡林巴——衣服不必换，姿态和光要换。
+3. **身高刻度和头身比画进三视图**。参考稿直接在左侧画了 0–190cm 的标尺，配「7.2 头身」「6 头身」。念真按 160cm、7 头身画一条，之后所有出图都能对着比。
+
+### 15.5 九维度自检表（照那张「完整维度」清单填）
+
+| 维度 | 念真的答案 |
+| --- | --- |
+| 体型骨架 | 160 cm，7 头身，瘦，肩窄，骨架小；站姿松、重心偏一侧 |
+| 面部五官 | 鹅蛋脸偏圆、下颌软；内双、外眼角微垂；鼻梁低、鼻头圆；下唇饱满偏淡玫瑰；右脸浅酒窝 |
+| 发型发色 | 中分短发，深棕近黑，发梢外翘，头顶一小撮呆毛；左侧金色一字夹 |
+| 肤色肌理 | 冷白偏粉，腮红淡；指节铅笔灰；没有疤，只有一点旧笔痕 |
+| 服饰穿搭 | 白衬衫卷袖 + 青绿针织背心；宽大、松、不修身；棉与针织两种材质 |
+| 配饰道具 | 左耳小金圈（右耳空）、金色一字夹、口袋里的糖/贴纸/线；书桌：台灯、凉茶、卡林巴、耳机、干花书签 |
+| 肢体细节 | 手指细、指节有铅笔灰；走路会停下来；习惯手插口袋 |
+| 色彩光影 | 夜：台灯暖黄 + 窗外青蓝；白天：阴天柔光；品牌青绿 #22C3AA / #3FD1E1 只出现在网页与 UI，不进画面主色 |
+| 动态外观 | 步子慢、常驻足；头发被风或雨打乱；袖子一直卷着 |
